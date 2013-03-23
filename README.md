@@ -1,9 +1,9 @@
-[animatio](http://returnfalse.org.com/plugins/animatio) - jQuery CSS3 Animation Plugin
+[animatio](http://returnfalse.org/plugins/animatio) - jQuery CSS3 Animations Plugin
 ==================================================
 
 Developed by Kieran Boyle and Sergio Almecija
 
-Special Thanks
+Shout-outs
 --------------------------------------
 
-We would like to thank Dan Eden for his fabulous work with animation.css that we incorporated into animatio.
+We would like to thank [Dan Eden](http://github.com/daneden) for his awesome work on [animation.css](http://daneden.me/animate/) which was incorporated in the predefined animation collection. 
