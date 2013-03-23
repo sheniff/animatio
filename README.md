@@ -1,7 +1,7 @@
 [animatio](http://returnfalse.org/plugins/animatio) - jQuery CSS3 Animations Plugin
 ==================================================
 
-Developed by @dysfunc and @sheniff
+Developed by [@dysfunc](http://github.com/dysfunc/) and [@sheniff](http://github.com/sheniff)
 
 Shout-outs
 --------------------------------------
