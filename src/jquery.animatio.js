@@ -180,7 +180,7 @@
         // add animation css to our inline style block so we only load it once
         style.textContent += ('\n' + cache[name]);
       }
-      console.log(cache)
+
       return name;
     },
     /**
@@ -193,20 +193,17 @@
      */
     run: function(type, config, target, fn){
       var element = $(target),
-          cleaned_prefix = prefix.replace(/-/g, ''),
           animation = null,
           animationEnd = { webkit: 'webkitAnimationEnd', moz: 'animationend', o: 'oAnimationEnd', ms: 'animationend' },
-          prev_type = element.css(prefix + 'animation-name'),
-          styles = {};
+          prev = element.css(prefix + 'animation-name'),
+          css = {};
 
       // reference config
       this.config = config;
-
       // make sure we have our style block
       this.createStyle();
-
       // setup callback method
-      element.one(animationEnd[cleaned_prefix], function(e){
+      element.one(animationEnd[cleaned], function(e){
         if(!config.bubbles)
           e.stopPropagation();
 
@@ -222,27 +219,27 @@
         animation = this.rule(type, config);
 
         // reset animation state for reuse
-        if(type === prev_type){
+        if(type === prev){
           element.css(prefix + 'animation', 'none');
 
           setTimeout(function(){
-            styles[prefix + 'animation-name'] = animation;
+            css[prefix + 'animation-name'] = animation;
           }, 10);
         }else{
-          styles[prefix + 'animation-name'] = animation;
+          css[prefix + 'animation-name'] = animation;
         }
 
-        styles[prefix + 'animation-delay']           = this.duration(config.delay);
-        styles[prefix + 'animation-direction']       = config.direction;
-        styles[prefix + 'animation-duration']        = this.duration(config.duration);
-        styles[prefix + 'animation-fill-mode']       = config.fillMode;
-        styles[prefix + 'animation-iteration-count'] = config.iterationCount;
-        styles[prefix + 'animation-play-state']      = config.playState || 'running';
-        styles[prefix + 'animation-timing-function'] = config.timingFunction;
-        styles[prefix + 'tranform']                  = 'translateZ(0)';
+        css[prefix + 'animation-delay']           = this.duration(config.delay);
+        css[prefix + 'animation-direction']       = config.direction;
+        css[prefix + 'animation-duration']        = this.duration(config.duration);
+        css[prefix + 'animation-fill-mode']       = config.fillMode;
+        css[prefix + 'animation-iteration-count'] = config.iterationCount;
+        css[prefix + 'animation-play-state']      = config.playState || 'running';
+        css[prefix + 'animation-timing-function'] = config.timingFunction;
+        css[prefix + 'tranform']                  = 'translateZ(0)';
 
         // apply styling to element
-        element.css(styles);
+        element.css(css);
       }
 
       return target;
