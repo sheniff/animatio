@@ -104,7 +104,8 @@
       duration: '1s',
       fillMode: 'none',
       iterationCount: 1,
-      timingFunction: 'ease',
+      rule: null,
+      timingFunction: 'ease'
     }, config || {}, $(this).data());
 
     return this.each(function(){
@@ -118,8 +119,8 @@
 
   $.extend(animatio.prototype, {
     /**
-     * Checks if a style sheet has been previously set to store the animation rules
-     * @return Boolean Always returns true (because if it doesn't exist a style sheet, it'll create a new one)
+     * Determines if we've already created our inline style block to store our animation rules in
+     * @return {Boolean} Always returns the value of true
      */
     createStyle: function(){
       if(!style){
@@ -146,7 +147,7 @@
       return this.config.duration;
     },
     /**
-     * Replaces template keys with object property value
+     * Replaces template keys with object property values
      * @param  {String} tpl The string template containing the keys
      * @param  {Mixed}  obj The object containing the template keys
      * @return {String}     The updated string template
@@ -165,19 +166,19 @@
      * any of the default names and adding a new rule in "config.rule".
      *
      * @param  {String} name    The name of animation to use
-     * @param  {Mixed}  config  Extra params to config the animation
+     * @param  {Mixed}  config  The animation configuration
      * @return {String} returns The name of the rule to apply to the object(s) to be animated
      */
     rule: function(name){
-      // check if animation exists inside our cache
+      // check if rule already exists in our cache
       if(!cache[name]){
-        // create keyframe animation and store it in our cache
+        // create browser specific keyframe animation and insert into cache
         cache[name] = '@' + prefix + 'keyframes ' + name;
         cache[name] += ' { ' + (
-          this.format($.effects[name] || this.config.rule, { browser: prefix })
+          this.format($.effects[name] || this.config.name, { browser: prefix })
         ) + '}';
 
-        // add animation css to our inline style block so we only load it once
+        // add animation name to our inline style block so we only load it once
         style.textContent += ('\n' + cache[name]);
       }
 
