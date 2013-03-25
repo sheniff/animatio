@@ -99,10 +99,10 @@
 
     config = $.extend(true, {
       bubbles: false,
-      delay: '0s',
+      delay: 0,
       direction: 'normal',
       duration: '1s',
-      fillMode: 'none',
+      fillMode: 'normal',
       iterationCount: 1,
       rule: null,
       timingFunction: 'ease'
