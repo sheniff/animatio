@@ -99,11 +99,11 @@
 
     config = $.extend(true, {
       bubbles: false,
-      delay: 0,
+      delay: '0s',
       direction: 'normal',
       duration: '1s',
-      fillMode: 'normal',
-      iterationCount: 1,
+      fillMode: 'forwards',
+      iterationCount: '1',
       rule: null,
       timingFunction: 'ease'
     }, config || {}, $(this).data());
