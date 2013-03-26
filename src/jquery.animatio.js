@@ -240,7 +240,7 @@
         css[prefix + 'tranform']                  = 'translateZ(0)';
 
         // apply styling to element
-        element.css(css);
+        element.css(css) && (css = null);
       }
 
       return target;
