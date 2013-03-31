@@ -175,7 +175,7 @@
       direction: 'normal',
       duration: '1s',
       fillMode: 'forwards',
-      iterationCount: 1,
+      iterationCount: '1',
       rule: null,
       timingFunction: 'ease'
     }, config || {}, $(this).data());
