@@ -1,10 +1,31 @@
-(function(window, $){
+/**!
+ *                                          __
+ *                 __                      /\ \__  __
+ *    __      ___ /\_\    ___ ___      __  \ \ ,_\/\_\    ___
+ *  /'__`\  /' _ `\/\ \ /' __` __`\  /'__`\ \ \ \/\/\ \  / __`\
+ * /\ \L\.\_/\ \/\ \ \ \/\ \/\ \/\ \/\ \L\.\_\ \ \_\ \ \/\ \L\ \
+ * \ \__/.\_\ \_\ \_\ \_\ \_\ \_\ \_\ \__/.\_\\ \__\\ \_\ \____/
+ *  \/__/\/_/\/_/\/_/\/_/\/_/\/_/\/_/\/__/\/_/ \/__/ \/_/\/___/
+ *
+ *
+ * @package   animatio.js - jQuery CSS3 Animations Plugin
+ *
+ * @author    Kieran Boyle (github.com/dysfunc)
+ * @author    Sergio Almecija (github.com/sheniff)
+ *
+ * @copyright 2012, 2013 Kieran Boyle and Sergio Almecija
+ * @license   github.com/dysfunc/animatio/license.txt
+ * @version   1.0
+ * @link      github.com/dysfunc/animatio
+ */
+
+ (function(window, $){
 
   /*------------------------------------
-   * CSS animations
+   * Baked in effects
    ------------------------------------*/
 
-  $.effects = {
+  $.effect = {
     bounce:"0%, 20%, 50%, 80%, 100% {{browser}transform: translateY(0);}40% {{browser}transform: translateY(-30px);}60% {{browser}transform: translateY(-15px);}",
     bounceIn:"0% {opacity: 0;{browser}transform: scale(.3);}50% {opacity: 1;{browser}transform: scale(1.05);}70% {{browser}transform: scale(.9);}100% {{browser}transform: scale(1);}",
     bounceInUp:"0% {opacity: 0;{browser}transform: translateY(100%);}60% {opacity: 1;{browser}transform: translateY(-30px);}80% {{browser}transform: translateY(10px);}100% {{browser}transform: translateY(0);}",
@@ -79,10 +100,61 @@
       documentElement = document.documentElement,
       navigator = global.navigator,
       agent = navigator.userAgent,
+      // browser prefix
       prefix = (/webkit/i).test(agent) ? '-webkit-' : (/firefox/i).test(agent) ? '-moz-' : (/opera/i).test(agent) ? '-o-' : (/msie/i).test(agent) ? '-ms-' : '',
+      // cleaned prefix
       cleaned = prefix.replace(/-/g, ''),
+      // CSS cache object
       cache = {},
-      style = null;
+      // CSS transition reset object
+      reset = {},
+      // reference to inline style block
+      style = null,
+      // animation configuration
+      properties = /^(property|delay|duration)$/i,
+      // CSS transforms
+      transforms = /^((perspective|rotate|scale|skew|translate)(X|Y|Z|3d)?|matrix(3d)?)$/i,
+      // transition end map
+      animationEnd = { webkit: 'webkitTransitionEnd', moz: 'transitionend', o: 'oTransitionEnd', ms: 'transitionend' },
+      /**
+       * Determines if we've already created our inline style block to store our animation rules in
+       * @return {Boolean} Always returns the value of true
+       */
+      createStyle = function(){
+        if(!style){
+          style = document.createElement('style');
+          style.setAttribute('type', 'text/css');
+          document.getElementsByTagName('head')[0].appendChild(style);
+        }
+        return true;
+      },
+      /**
+       * Returns the duration for the animation effect
+       * @param  {Mixed}  duration The number or string containing the duration of the animation
+       * @return {String} returns  The duration in string format
+       */
+      runtime = function(duration, defaut){
+        if(duration){
+          if(typeof(duration) === 'number')
+            return duration + 'ms';
+
+          if(typeof(duration) === 'string')
+            return (duration.match(/[\d\.]*m?s/)[0] || defaut);
+        }
+
+        return defaut;
+      },
+      wait = function(duration, delay){
+        var map = { ms: 1, s: 1000 },
+            calc;
+
+        calc = function(time){
+          var match = time.match(/(\d+)(ms|s)/);
+          return parseFloat(RegExp.$1) * map[RegExp.$2 || 's'];
+        };
+
+        return calc(duration) + calc(delay);
+      };
 
   /**
    * Animates an object (or a group of them) using CSS3
@@ -90,7 +162,7 @@
    * @param {Mixed}    config The animation configuration
    * @param {Function} fn     The animation completion callback (optional)
    */
-  $.fn.animatio = function(effect, config, fn){
+  $.fn.effect = function(effect, config, fn){
 
     if($.isFunction(config)){
       fn = config;
@@ -102,50 +174,22 @@
       delay: '0s',
       direction: 'normal',
       duration: '1s',
-      fillMode: 'none',
+      fillMode: 'forwards',
       iterationCount: 1,
       rule: null,
       timingFunction: 'ease'
     }, config || {}, $(this).data());
 
     return this.each(function(){
-      return new animatio(effect, config, this, fn);
+      return new effects(effect, config, this, fn);
     });
   };
 
-  var animatio = function(type, config, target, fn){
+  var effects = function(type, config, target, fn){
     return this.run(type, config, target, fn);
   };
 
-  $.extend(animatio.prototype, {
-    /**
-     * Determines if we've already created our inline style block to store our animation rules in
-     * @return {Boolean} Always returns the value of true
-     */
-    createStyle: function(){
-      if(!style){
-        style = document.createElement('style');
-        style.setAttribute('type', 'text/css');
-        document.getElementsByTagName('head')[0].appendChild(style);
-      }
-      return true;
-    },
-    /**
-     * Returns the duration for the animation effect
-     * @param  {Mixed}  duration The number or string containing the duration of the animation
-     * @return {String} returns  The duration in string format
-     */
-    duration: function(duration){
-      if(duration){
-        if(typeof(duration) === 'number')
-          return duration+'s';
-
-        if(typeof(duration) === 'string')
-          return (duration.match(/[\d\.]*m?s/)[0] || this.config.duration);
-      }
-
-      return this.config.duration;
-    },
+  $.extend(effects.prototype, {
     /**
      * Replaces template keys with object property values
      * @param  {String} tpl The string template containing the keys
@@ -175,7 +219,7 @@
         // create browser specific keyframe animation and insert into cache
         cache[name] = '@' + prefix + 'keyframes ' + name;
         cache[name] += ' { ' + (
-          this.format($.effects[name] || this.config.name, { browser: prefix })
+          this.format($.effect[name] || this.config.name, { browser: prefix })
         ) + '}';
 
         // add animation name to our inline style block so we only load it once
@@ -201,8 +245,8 @@
 
       // reference config
       this.config = config;
-      // make sure we have our style block
-      this.createStyle();
+      // make sure we have our style block ready
+      createStyle();
       // setup callback method
       element.one(animationEnd[cleaned], function(e){
         if(!config.bubbles)
@@ -230,9 +274,9 @@
           css[prefix + 'animation-name'] = animation;
         }
 
-        css[prefix + 'animation-delay']           = this.duration(config.delay);
+        css[prefix + 'animation-delay']           = runtime(config.delay, '0s');
         css[prefix + 'animation-direction']       = config.direction;
-        css[prefix + 'animation-duration']        = this.duration(config.duration);
+        css[prefix + 'animation-duration']        = runtime(config.duration, '1s');
         css[prefix + 'animation-fill-mode']       = config.fillMode;
         css[prefix + 'animation-iteration-count'] = config.iterationCount;
         css[prefix + 'animation-play-state']      = config.playState || 'running';
@@ -240,10 +284,93 @@
         css[prefix + 'tranform']                  = 'translateZ(0)';
 
         // apply styling to element
-        element.css(css);
+        element.css(css) && (css = null);
       }
 
       return target;
+    }
+  });
+
+
+  $.fn.transform = function(config, duration, fn){
+    config = $.extend(true, {
+      duration: '500ms'
+    }, config, $(this).data());
+
+    if($.isFunction(duration)){
+      fn = duration;
+      duration = config.duration;
+    }
+
+    return this.each(function(){
+      return new transform(this, config, duration, fn);
+    });
+  };
+
+  var transform = function(element, config, duration, fn){
+    var easing = config.easing || 'linear',
+        duration = runtime(duration, '500ms'),
+        delay = runtime(config.delay, '0s');
+
+    this.run($(element), config, duration, delay, easing, fn);
+  };
+
+  $.extend(transform.prototype, {
+    reset: function(){
+      return reset[prefix + 'transition-delay'] = reset[prefix + 'transition-duration'] = reset[prefix + 'transition-property'] = '';
+    },
+    run: function(element, config, duration, delay, easing, callback){
+
+      var $t = this,
+          css = {},
+          transforms = [],
+          transitions = [],
+          timeout = wait(duration, delay),
+          fn, property, sleep, value;
+
+      for(property in config){
+        if(!(properties).test(property)){
+          if((transforms).test(property)){
+            transforms.push(property + '(' + config[property] + ')');
+          }else{
+            if((/^([-+=])/).test(config[property])){
+
+              var direction = RegExp.$1,
+                  number = parseInt(String(config[property]).replace(/[-=+]/g, ''), 10),
+                  current = element.css(property) || 0;
+
+              value = !!~direction.indexOf('+') ? current + number : current - number;
+            }else{
+              value = config[property];
+            }
+
+            css[property] = value;
+
+            transitions.push(property);
+          }
+        }
+      }
+
+      css[prefix + 'transition-delay']           = delay;
+      css[prefix + 'transition-duration']        = duration;
+      css[prefix + 'transition-property']        = transitions.join(' ');
+      css[prefix + 'transition-timing-function'] = easing;
+      css[prefix + 'transform']                  = 'translateZ(0) ' + transforms.join(' ');
+
+      element.css(css) && (css = null) && (transforms = transitions = []);
+
+      fn = function(e){
+        return typeof(e) !== 'undefined' && e.target !== e.originalTarget ? false : $(e.target).unbind('.transform');
+      };
+
+      element.on(animationEnd[cleaned] + '.transform', fn);
+
+      sleep = setTimeout(function(){
+        element.css($t.reset());
+        $.isFunction(callback) && callback.call(element[0]);
+
+        sleep && clearTimeout(sleep) && (sleep = null);
+      }, timeout);
     }
   });
 

@@ -282,7 +282,7 @@
 
   <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script type="text/javascript" src="../src/jquery.animatio.min.js"></script>
+  <script type="text/javascript" src="../src/jquery.animatio.js"></script>
 
   <!-- // applying effects to examples -->
   <script type="text/javascript">
@@ -290,7 +290,7 @@
         window.prettyPrint && prettyPrint();
 
       $('.row').each(function(i){
-        $(this).animatio('flipInX', { delay: (i+1) + '90ms' });
+        $(this).effect('flipInX', { delay: (i+1) + '90ms' });
 
       });
 
@@ -299,8 +299,8 @@
           var img = $(this).closest('.effect_block').find('.html-badge'),
               effect = $(this).data('effect');
 
-          img.animatio(effect, {}, function(){
-            $(this).animatio('reset');
+          img.effect(effect, {}, function(){
+            $(this).effect('reset');
           });
         });
       });
